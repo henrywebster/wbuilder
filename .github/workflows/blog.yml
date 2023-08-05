@@ -8,9 +8,12 @@ on:
 
 env:
   OCAML_COMPILER: 4.13.1
-  WBUILDER_OUTPUT_FILE: site/index.html
-  WBUILDER_TEMPLATE_FILE: template.mustache
+  WBUILDER_BASE: site
+  WBUILDER_POST_TEMPLATE_FILE: post.mustache
+  WBUILDER_HOME_TEMPLATE_FILE: template.mustache
   WBUILDER_DB_FILE: website.db
+  WBUILDER_IMG_FOLDER: img
+  WBUILDER_POST_FOLDER: post
 
 permissions:
   contents: write
