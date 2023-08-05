@@ -1,0 +1,41 @@
+name: Blog
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+env:
+  OCAML_COMPILER: 4.13.1
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set-up OCaml ${{ env.OCAML_COMPILER }}
+        uses: ocaml/setup-ocaml@v2
+        with:
+          ocaml-compiler: ${{ env.OCAML_COMPILER }}
+
+      - run: opam install . --deps-only --with-test
+
+      - run: opam exec -- dune build
+
+      - run: mkdir site
+
+      - run: opam exec -- dune exec wbuilder
+
+      - run: cp style.css site
+
+      - name: Deploy 🚀
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: site
