@@ -8,6 +8,9 @@ on:
 
 env:
   OCAML_COMPILER: 4.13.1
+  WBUILDER_OUTPUT_FILE: site/index.html
+  WBUILDER_TEMPLATE_FILE: template.mustache
+  WBUILDER_DB_FILE: website.db
 
 permissions:
   contents: write
