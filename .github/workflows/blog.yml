@@ -32,7 +32,7 @@ jobs:
 
       - run: opam exec -- dune build
 
-      - run: mkdir site
+      - run: mkdir site && mkdir site/post
 
       - run: opam exec -- dune exec wbuilder
 
