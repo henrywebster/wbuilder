@@ -10,25 +10,25 @@ homepage: "https://github.com/username/reponame"
 doc: "https://url/to/documentation"
 bug-reports: "https://github.com/username/reponame/issues"
 depends: [
-"ocaml"
-"dune" {>= "3.10"}
-"mustache"
-"core"
-"sqlite3"
-"odoc" {with-doc}
+  "ocaml"
+  "dune" {>= "3.10"}
+  "mustache"
+  "core"
+  "sqlite3"
+  "odoc" {with-doc}
 ]
 build: [
-["dune" "subst"] {dev}
-[
-"dune"
-"build"
-"-p"
-name
-"-j"
-jobs
-"@install"
-"@runtest" {with-test}
-"@doc" {with-doc}
-]
+  ["dune" "subst"] {dev}
+  [
+    "dune"
+    "build"
+    "-p"
+    name
+    "-j"
+    jobs
+    "@install"
+    "@runtest" {with-test}
+    "@doc" {with-doc}
+  ]
 ]
 dev-repo: "git+https://github.com/username/reponame.git"

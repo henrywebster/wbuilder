@@ -6,7 +6,8 @@ type post = {
   slug : string;
 }
 
-type blog = { name : string; posts : post list }
+type image = { filename : string; data : string }
+type blog = { name : string; posts : post list; images : image list }
 
 (*
    TODO
@@ -21,6 +22,11 @@ type blog = { name : string; posts : post list }
    [x] Narrow down all the font loading
    [ ] Only get post names for blog?
    [x] Formatting for HTML and CSS
+   [ ] Write pictures one at a time
+   [ ] Program manages site folder
+   [ ] Only write pictures used in posts
+   [ ] All-or-nothing (delete site folder if another part fails)
+   [ ] Concurrent writing of files
 *)
 
 let convert_post post =
@@ -35,13 +41,19 @@ let convert_post post =
           ("slug", `String slug);
         ]
 
+let write_image image =
+  match image with
+  | { filename; data } ->
+      Core.Out_channel.write_all (Printf.sprintf "site/img/%s" filename) ~data
+
 let write_post post =
-  Core.Out_channel.write_all
-    (Printf.sprintf "site/post/%s.html" post.slug)
-    ~data:
-      (Mustache.render
-         (Mustache.of_string (Core.In_channel.read_all "post.mustache"))
-         (convert_post post))
+  ignore
+    (Core.Out_channel.write_all
+       (Printf.sprintf "site/post/%s.html" post.slug)
+       ~data:
+         (Mustache.render
+            (Mustache.of_string (Core.In_channel.read_all "post.mustache"))
+            (convert_post post)))
 
 let () =
   let output_file = Sys.getenv "WBUILDER_OUTPUT_FILE" in
@@ -59,26 +71,42 @@ let () =
       Sqlite3.prepare
         (Sqlite3.db_open (Sys.getenv "WBUILDER_DB_FILE") ~mode:`READONLY)
     in
+
+    let db_to_list converter accumulator row = accumulator @ converter row in
+    let image_converter row =
+      [
+        {
+          filename = Sqlite3.Data.to_string_exn ((Array.get row) 0);
+          data = Sqlite3.Data.to_string_exn ((Array.get row) 1);
+        };
+      ]
+    in
+    let post_converter row =
+      [
+        {
+          blog_name = Sqlite3.Data.to_string_exn ((Array.get row) 0);
+          title = Sqlite3.Data.to_string_exn ((Array.get row) 1);
+          content = Sqlite3.Data.to_string_exn ((Array.get row) 2);
+          created_at = Sqlite3.Data.to_string_exn ((Array.get row) 3);
+          slug = Sqlite3.Data.to_string_exn ((Array.get row) 4);
+        };
+      ]
+    in
+    let images =
+      match
+        Sqlite3.fold
+          (prepare_conn "SELECT name, data FROM image")
+          ~f:(db_to_list image_converter)
+          ~init:[]
+      with
+      | _, value -> value
+    in
     let info_statement = prepare_conn "SELECT name FROM hello" in
     ignore (Sqlite3.step info_statement);
     let name =
       Sqlite3.Data.to_string_exn (Array.get (Sqlite3.row_data info_statement) 0)
     in
     let posts =
-      let to_array acc post =
-        let get = Array.get post in
-        acc
-        @ [
-            {
-              blog_name = Sqlite3.Data.to_string_exn (get 0);
-              title = Sqlite3.Data.to_string_exn (get 1);
-              content = Sqlite3.Data.to_string_exn (get 2);
-              created_at = Sqlite3.Data.to_string_exn (get 3);
-              slug = Sqlite3.Data.to_string_exn (get 4);
-            };
-          ]
-      in
-
       match
         Sqlite3.fold
           (prepare_conn
@@ -86,11 +114,12 @@ let () =
               DATE(created_at, 'unixepoch')) AS created_at, slug FROM post \
               JOIN (SELECT name FROM hello ORDER BY rowid ASC LIMIT 1) ORDER \
               BY created_at DESC")
-          ~f:to_array ~init:[]
+          ~f:(db_to_list post_converter)
+          ~init:[]
       with
       | _, value -> value
     in
-    { name; posts }
+    { name; posts; images }
   in
   let blog = from_db in
   ignore
@@ -100,4 +129,6 @@ let () =
             (Mustache.of_string (Core.In_channel.read_all template_file))
             (convert_blog blog)));
 
-  ignore (List.map write_post blog.posts)
+  ignore (List.map write_post blog.posts);
+
+  ignore (List.iter write_image blog.images)
