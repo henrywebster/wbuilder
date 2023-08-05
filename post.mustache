@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en-US">
+  <head>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Modak&family=Open+Sans:ital@0;1&display=swap"
+      rel="stylesheet"
+    />
+    <link href="../style.css" rel="stylesheet" />
+    <meta charset="utf-8" />
+    <title>{{title}}</title>
+  </head>
+  <body>
+    <header>
+      <h1 style="display: flex; margin: auto">
+        <a class="headerlink" href="../index.html">{{blog_name}}</a>
+      </h1>
+      <!-- <hr /> -->
+    </header>
+    <article>
+      <h2>{{title}}</h2>
+      <time datetime="2023-06-19T00:00">{{created_at}}</time>
+      {{{content}}}
+    </article>
+    <footer>
+      <hr />
+      <small>©2023 Henry J. Webster</small>
+    </footer>
+  </body>
+</html>

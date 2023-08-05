@@ -1,0 +1,4 @@
+(executable
+ (public_name wbuilder)
+ (name main)
+ (libraries wbuilder mustache core sqlite3))
