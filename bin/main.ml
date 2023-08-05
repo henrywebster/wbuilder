@@ -30,11 +30,12 @@ type blog = { name : string; posts : post list; images : image list }
    [x] Fix hardcoded files
    [ ] Alt tags on images
    [x] Fix database names
+   [ ] CI Checks 
 *)
 
 let () =
   let base_folder = Sys.getenv "WBUILDER_BASE" in
-  let template_file = Sys.getenv "WBUILDER_TEMPLATE_FILE" in
+  let template_file = Sys.getenv "WBUILDER_HOME_TEMPLATE_FILE" in
   let convert_post post =
     match post with
     | { blog_name; title; content; created_at; slug } ->
